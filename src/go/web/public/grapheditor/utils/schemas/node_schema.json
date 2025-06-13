@@ -14,15 +14,14 @@
       "items": {
         "type": "object",
         "required": [
-          "key",
-          "value"
+          "key"
         ],
         "properties": {
           "key": {
             "type": "string"
           },
           "value": {
-            "type": "array"
+            "type": "string"
           }
         }
       }
