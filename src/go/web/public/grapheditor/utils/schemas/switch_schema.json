@@ -34,7 +34,7 @@
       "title": "VLAN ID",
       "default": 0,
       "examples": [
-        102
+        101
       ]
     },
     "name": {
