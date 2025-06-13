@@ -13,8 +13,7 @@
       "items": {
         "type": "object",
         "required": [
-          "key",
-          "value"
+          "key"
         ],
         "properties": {
           "key": {
