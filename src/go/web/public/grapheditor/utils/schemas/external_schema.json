@@ -27,7 +27,19 @@
             "type": "string"
           },
           "value": {
-            "type": "array"
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "example": {
+                  "type": "string",
+                  "title": "Example field (you can remove this)"
+                }
+              },
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
           }
         }
       }
