@@ -22,7 +22,10 @@
             "type": "string"
           },
           "value": {
-            "type": "array"
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       }
