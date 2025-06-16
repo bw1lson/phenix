@@ -47,10 +47,7 @@
                   "type": "string"
                 },
                 "value": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
+                  "type": "array"
                 }
               }
             }
