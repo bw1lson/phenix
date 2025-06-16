@@ -24,21 +24,23 @@
         ],
         "properties": {
           "key": {
-            "type": "string",
-            "title": "Key"
+            "type": "string"
           },
           "value": {
             "type": "array",
-            "title": "Value",
             "items": {
               "type": "object",
-              "title": "Item",
-              "defaultProperties": [],
-              "additionalProperties": {
-                "type": "string"
-              },
-              "options": {
-                "enable_properties": true
+              "required": [
+                "key",
+                "value"
+              ],
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
               }
             }
           }
