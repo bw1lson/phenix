@@ -34,35 +34,16 @@
             "pattern": "^(.*)$"
           },
           "annotations": {
-            "title": "Annotations",
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": [
-                "key",
-                "value"
-              ],
-              "properties": {
-                "key": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "required": [
-                      "key",
-                      "value"
-                    ],
-                    "properties": {
-                      "key": {
-                        "type": "string"
-                      },
-                      "value": {
-                        "type": "string"
-                      }
-                    }
-                  }
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": [
+                    "string",
+                    "number"
+                  ]
                 }
               }
             }
