@@ -30,14 +30,12 @@
             "type": "array",
             "items": {
               "type": "object",
-              "properties": {
-                "example": {
-                  "type": "string",
-                  "title": "Example field (you can remove this)"
-                }
-              },
+              "title": "Item",
               "additionalProperties": {
                 "type": "string"
+              },
+              "options": {
+                "enable_properties": true
               }
             }
           }
