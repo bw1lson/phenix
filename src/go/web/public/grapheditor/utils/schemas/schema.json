@@ -44,13 +44,16 @@
               ],
               "properties": {
                 "key": {
-                  "type": "string"
+                  "type": "string",
+                  "title": "Key"
                 },
                 "value": {
                   "type": "array",
+                  "title": "Value",
                   "items": {
                     "type": "object",
                     "title": "Item",
+                    "defaultProperties": [],
                     "additionalProperties": {
                       "type": "string"
                     },
