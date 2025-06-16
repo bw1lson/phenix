@@ -14,20 +14,15 @@
       "readonly": true
     },
     "annotations": {
-      "title": "Annotations",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "key",
-          "value"
-        ],
-        "properties": {
-          "key": {
-            "type": "string"
-          },
-          "value": {
-            "type": "array"
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string"
+            ]
           }
         }
       }
