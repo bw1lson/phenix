@@ -21,13 +21,7 @@
             "type": "string"
           },
           "value": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
-              }
-            }
+            "type": "string"
           }
         }
       }
