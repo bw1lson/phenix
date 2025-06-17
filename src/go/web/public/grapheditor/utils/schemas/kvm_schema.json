@@ -12,22 +12,26 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "key",
-          "value"
-        ],
+        "required": ["key", "value"],
         "properties": {
           "key": {
             "type": "string"
           },
           "value": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  " additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
                 "type": "string"
               }
-            }
+            ]
           }
         }
       }
