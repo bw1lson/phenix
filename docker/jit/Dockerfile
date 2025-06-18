@@ -1,7 +1,8 @@
-ARG PHENIX_REPO=sandialabs/sceptre-phenix
-ARG PHENIX_TAG=main
+ARG PHENIX_REPO=bw1lson/phenix
+ARG PHENIX_TAG=annotations
 
-FROM ghcr.io/${PHENIX_REPO}/phenix:${PHENIX_TAG}
+FROM phenix
+#FROM ghcr.io/${PHENIX_REPO}/phenix:${PHENIX_TAG}
 
 # https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
 ARG PHENIX_REPO
@@ -14,6 +15,7 @@ RUN wget -O node.txz https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSI
   && ln -s /usr/local/bin/node /usr/local/bin/nodejs
 
 RUN npm install -g @vue/cli redoc-cli yarn
+
 RUN git clone --branch ${PHENIX_TAG} https://github.com/${PHENIX_REPO}.git /usr/local/src/phenix \
   && mkdir -p /opt/phenix/web \
   && cp -a /usr/local/src/phenix/src/go/web/public /opt/phenix/web
