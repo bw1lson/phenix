@@ -129,35 +129,69 @@ func newVMInfoCmd() *cobra.Command {
 }
 
 func newVMPauseCmd() *cobra.Command {
+	var filter string
+
 	cmd := &cobra.Command{
-		Use:               "pause <experiment name> <vm name>",
-		Short:             "Pause a running VM for a specific experiment",
-		ValidArgsFunction: vmArgsCompletion,
+		Use:   "pause <experiment name> [vm name]",
+		Short: "Pause a running VM for a specific experiment",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) != pauseArgs {
-				return errors.New("must provide an experiment and VM name")
+			if len(args) < 1 || len(args) > 2 {
+				return errors.New("must provide an experiment name and optionally a VM name")
 			}
 
-			var (
-				expName = args[0]
-				vmName  = args[1]
-			)
+			expName := args[0]
 
-			err := vm.Pause(expName, vmName)
+			if len(args) == 2 {
+				vmName := args[1]
+
+				err := vm.Pause(expName, vmName)
+				if err != nil {
+					err := util.HumanizeError(err, "%s", "Unable to pause the "+vmName+" VM")
+					return err.Humanized()
+				}
+
+				plog.Info(plog.TypeSystem, "vm paused", "vm", vmName, "exp", expName)
+				return nil
+			}
+
+			if len(filter) == 0 {
+				return errors.New("must provide either a VM name or --filter")
+			}
+
+			filterTree := mm.BuildTree(filter)
+			if filterTree == nil {
+				return errors.New("invalid filter")
+			}
+
+			vms, err := vm.List(expName)
 			if err != nil {
-				err := util.HumanizeError(err, "%s", "Unable to pause the "+vmName+" VM")
-
+				err := util.HumanizeError(err, "Unable to get a list of VMs")
 				return err.Humanized()
 			}
 
-			plog.Info(plog.TypeSystem, "vm paused", "vm", vmName, "exp", expName)
+			for _, machine := range vms {
+				if !filterTree.Evaluate(&machine) {
+					continue
+				}
+
+				err := vm.Pause(expName, machine.Name)
+				if err != nil {
+					err := util.HumanizeError(err, "%s", "Unable to pause the "+machine.Name+" VM")
+					return err.Humanized()
+				}
+
+				plog.Info(plog.TypeSystem, "vm paused", "vm", machine.Name, "exp", expName)
+			}
 
 			return nil
 		},
 	}
 
+	cmd.Flags().StringVarP(&filter, "filter", "f", "", "Filter to restrict the list of VMs")
+
 	return cmd
 }
+
 
 func newVMResumeCmd() *cobra.Command {
 	cmd := &cobra.Command{
