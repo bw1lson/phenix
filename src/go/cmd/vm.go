@@ -141,7 +141,7 @@ func newVMPauseCmd() *cobra.Command {
 
 			expName := args[0]
 
-			if len(args) == 2 {
+			if len(args) == pauseArgs {
 				vmName := args[1]
 
 				err := vm.Pause(expName, vmName)
@@ -199,23 +199,53 @@ func newVMResumeCmd() *cobra.Command {
 		Short:             "Resume a paused VM for a specific experiment",
 		ValidArgsFunction: vmArgsCompletion,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) != pauseArgs {
-				return errors.New("must provide an experiment and VM name")
+			if len(args) < 1 || len(args) > 2 {
+				return errors.New("must provide an experiment name and optionally a VM name")
 			}
 
-			var (
-				expName = args[0]
-				vmName  = args[1]
-			)
+			expName := args[0]
 
-			err := vm.Resume(expName, vmName)
+			if len(args) == pauseArgs {
+				vmName := args[1]
+
+				err := vm.Resume(expName, vmName)
+				if err != nil {
+					err := util.HumanizeError(err, "%s", "Unable to resume the "+vmName+" VM")
+					return err.Humanized()
+				}
+
+				plog.Info(plog.TypeSystem, "vm resumed", "vm", vmName, "exp", expName)
+				return nil
+			}
+
+			if len(filter) == 0 {
+				return errors.New("must provide either a VM name or --filter")
+			}
+
+			filterTree := mm.BuildTree(filter)
+			if filterTree == nil {
+				return errors.New("invalid filter")
+			}
+
+			vms, err := vm.List(expName)
 			if err != nil {
-				err := util.HumanizeError(err, "%s", "Unable to resume the "+vmName+" VM")
-
+				err := util.HumanizeError(err, "Unable to get a list of VMs")
 				return err.Humanized()
 			}
 
-			plog.Info(plog.TypeSystem, "vm resumed", "vm", vmName, "exp", expName)
+			for _, machine := range vms {
+				if !filterTree.Evaluate(&machine) {
+					continue
+				}
+
+				err := vm.Resume(expName, machine.Name)
+				if err != nil {
+					err := util.HumanizeError(err, "%s", "Unable to resume the "+machine.Name+" VM")
+					return err.Humanized()
+				}
+
+				plog.Info(plog.TypeSystem, "vm resumed", "vm", machine.Name, "exp", expName)
+			}
 
 			return nil
 		},
