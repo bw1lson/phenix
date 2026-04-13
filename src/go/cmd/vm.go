@@ -592,7 +592,7 @@ func newVMNetCmd() *cobra.Command {
 	return cmd
 }
 
-//nolint:funlen,maintidx // command definition
+//nolint:funlen // command definition
 func newVMCaptureCmd() *cobra.Command {
 	desc := `Modify network packet captures for a VM
 
