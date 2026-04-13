@@ -222,7 +222,6 @@ func newVMPauseCmd() *cobra.Command {
 	return cmd
 }
 
-
 func newVMResumeCmd() *cobra.Command {
 	var filter string
 
