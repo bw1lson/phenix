@@ -128,6 +128,30 @@ func newVMInfoCmd() *cobra.Command {
 	return cmd
 }
 
+func listFilteredVMNames(expName, filter string) ([]string, error) {
+	filterTree := mm.BuildTree(filter)
+	if filterTree == nil {
+		return nil, errors.New("invalid filter")
+	}
+
+	vms, err := vm.List(expName)
+	if err != nil {
+		err := util.HumanizeError(err, "Unable to get a list of VMs")
+		return nil, err.Humanized()
+	}
+
+	var names []string
+	for _, machine := range vms {
+		if !filterTree.Evaluate(&machine) {
+			continue
+		}
+
+		names = append(names, machine.Name)
+	}
+
+	return names, nil
+}
+
 func newVMPauseCmd() *cobra.Command {
 	var filter string
 
@@ -158,29 +182,19 @@ func newVMPauseCmd() *cobra.Command {
 				return errors.New("must provide either a VM name or --filter")
 			}
 
-			filterTree := mm.BuildTree(filter)
-			if filterTree == nil {
-				return errors.New("invalid filter")
-			}
-
-			vms, err := vm.List(expName)
+			vmNames, err := listFilteredVMNames(expName, filter)
 			if err != nil {
-				err := util.HumanizeError(err, "Unable to get a list of VMs")
-				return err.Humanized()
+				return err
 			}
 
-			for _, machine := range vms {
-				if !filterTree.Evaluate(&machine) {
-					continue
-				}
-
-				err := vm.Pause(expName, machine.Name)
+			for _, vmName := range vmNames {
+				err := vm.Pause(expName, vmName)
 				if err != nil {
-					err := util.HumanizeError(err, "%s", "Unable to pause the "+machine.Name+" VM")
+					err := util.HumanizeError(err, "%s", "Unable to pause the "+vmName+" VM")
 					return err.Humanized()
 				}
 
-				plog.Info(plog.TypeSystem, "vm paused", "vm", machine.Name, "exp", expName)
+				plog.Info(plog.TypeSystem, "vm paused", "vm", vmName, "exp", expName)
 			}
 
 			return nil
@@ -195,7 +209,7 @@ func newVMPauseCmd() *cobra.Command {
 
 func newVMResumeCmd() *cobra.Command {
 	var filter string
-	
+
 	cmd := &cobra.Command{
 		Use:               "resume <experiment name> <vm name>",
 		Short:             "Resume a paused VM for a specific experiment",
@@ -224,34 +238,26 @@ func newVMResumeCmd() *cobra.Command {
 				return errors.New("must provide either a VM name or --filter")
 			}
 
-			filterTree := mm.BuildTree(filter)
-			if filterTree == nil {
-				return errors.New("invalid filter")
-			}
-
-			vms, err := vm.List(expName)
+			vmNames, err := listFilteredVMNames(expName, filter)
 			if err != nil {
-				err := util.HumanizeError(err, "Unable to get a list of VMs")
-				return err.Humanized()
+				return err
 			}
 
-			for _, machine := range vms {
-				if !filterTree.Evaluate(&machine) {
-					continue
-				}
-
-				err := vm.Resume(expName, machine.Name)
+			for _, vmName := range vmNames {
+				err := vm.Resume(expName, vmName)
 				if err != nil {
-					err := util.HumanizeError(err, "%s", "Unable to resume the "+machine.Name+" VM")
+					err := util.HumanizeError(err, "%s", "Unable to resume the "+vmName+" VM")
 					return err.Humanized()
 				}
 
-				plog.Info(plog.TypeSystem, "vm resumed", "vm", machine.Name, "exp", expName)
+				plog.Info(plog.TypeSystem, "vm resumed", "vm", vmName, "exp", expName)
 			}
 
 			return nil
 		},
 	}
+
+	cmd.Flags().StringVarP(&filter, "filter", "f", "", "Filter to restrict the list of VMs")
 
 	return cmd
 }
@@ -684,30 +690,12 @@ func newVMCaptureCmd() *cobra.Command {
 			// Apply the optional filter to restrict the
 			// VMs searched
 			if len(filter) > 0 {
-				filterTree := mm.BuildTree(filter)
-
-				vms, err := vm.List(expName)
+				names, err := listFilteredVMNames(expName, filter)
 				if err != nil {
-					err := util.HumanizeError(
-						err,
-						"%s",
-						"Unable to retrieve a list of VMs for "+expName+" ",
-					)
-
-					return err.Humanized()
+					return err
 				}
 
-				for _, vm := range vms {
-					if filterTree == nil {
-						continue
-					} else {
-						if !filterTree.Evaluate(&vm) {
-							continue
-						}
-
-						vmList = append(vmList, vm.Name)
-					}
-				}
+				vmList = names
 			}
 
 			vms, err := vm.CaptureSubnet(expName, subnet, vmList)
@@ -784,30 +772,12 @@ func newVMCaptureCmd() *cobra.Command {
 			// Apply the optional filter to restrict the
 			// VMs searched
 			if len(filter) > 0 {
-				filterTree := mm.BuildTree(filter)
-
-				vms, err := vm.List(expName)
+				names, err := listFilteredVMNames(expName, filter)
 				if err != nil {
-					err := util.HumanizeError(
-						err,
-						"%s",
-						"Unable to retrieve a list of VMs for "+expName+" ",
-					)
-
-					return err.Humanized()
+					return err
 				}
 
-				for _, vm := range vms {
-					if filterTree == nil {
-						continue
-					} else {
-						if !filterTree.Evaluate(&vm) {
-							continue
-						}
-
-						vmList = append(vmList, vm.Name)
-					}
-				}
+				vmList = names
 			}
 
 			if _, err := vm.StopCaptureSubnet(expName, subnet, vmList); err != nil {
