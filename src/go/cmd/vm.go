@@ -152,6 +152,49 @@ func listFilteredVMNames(expName, filter string) ([]string, error) {
 	return names, nil
 }
 
+func runVMAction(
+	expName string,
+	vmName string,
+	action func(string, string) error,
+	actionVerb string,
+	logVerb string,
+) error {
+	err := action(expName, vmName)
+	if err != nil {
+		err := util.HumanizeError(err, "%s", "Unable to "+actionVerb+" the "+vmName+" VM")
+		return err.Humanized()
+	}
+
+	plog.Info(plog.TypeSystem, "vm "+logVerb, "vm", vmName, "exp", expName)
+
+	return nil
+}
+
+func runFilteredVMAction(
+	expName string,
+	filter string,
+	action func(string, string) error,
+	actionVerb string,
+	logVerb string,
+) error {
+	if len(filter) == 0 {
+		return errors.New("must provide either a VM name or --filter")
+	}
+
+	vmNames, err := listFilteredVMNames(expName, filter)
+	if err != nil {
+		return err
+	}
+
+	for _, vmName := range vmNames {
+		if err := runVMAction(expName, vmName, action, actionVerb, logVerb); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func newVMPauseCmd() *cobra.Command {
 	var filter string
 
@@ -167,37 +210,10 @@ func newVMPauseCmd() *cobra.Command {
 
 			if len(args) == pauseArgs {
 				vmName := args[1]
-
-				err := vm.Pause(expName, vmName)
-				if err != nil {
-					err := util.HumanizeError(err, "%s", "Unable to pause the "+vmName+" VM")
-					return err.Humanized()
-				}
-
-				plog.Info(plog.TypeSystem, "vm paused", "vm", vmName, "exp", expName)
-				return nil
+				return runVMAction(expName, vmName, vm.Pause, "pause", "paused")
 			}
 
-			if len(filter) == 0 {
-				return errors.New("must provide either a VM name or --filter")
-			}
-
-			vmNames, err := listFilteredVMNames(expName, filter)
-			if err != nil {
-				return err
-			}
-
-			for _, vmName := range vmNames {
-				err := vm.Pause(expName, vmName)
-				if err != nil {
-					err := util.HumanizeError(err, "%s", "Unable to pause the "+vmName+" VM")
-					return err.Humanized()
-				}
-
-				plog.Info(plog.TypeSystem, "vm paused", "vm", vmName, "exp", expName)
-			}
-
-			return nil
+			return runFilteredVMAction(expName, filter, vm.Pause, "pause", "paused")
 		},
 	}
 
@@ -211,7 +227,7 @@ func newVMResumeCmd() *cobra.Command {
 	var filter string
 
 	cmd := &cobra.Command{
-		Use:               "resume <experiment name> <vm name>",
+		Use:               "resume <experiment name> [vm name]",
 		Short:             "Resume a paused VM for a specific experiment",
 		ValidArgsFunction: vmArgsCompletion,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -223,37 +239,10 @@ func newVMResumeCmd() *cobra.Command {
 
 			if len(args) == pauseArgs {
 				vmName := args[1]
-
-				err := vm.Resume(expName, vmName)
-				if err != nil {
-					err := util.HumanizeError(err, "%s", "Unable to resume the "+vmName+" VM")
-					return err.Humanized()
-				}
-
-				plog.Info(plog.TypeSystem, "vm resumed", "vm", vmName, "exp", expName)
-				return nil
+				return runVMAction(expName, vmName, vm.Resume, "resume", "resumed")
 			}
 
-			if len(filter) == 0 {
-				return errors.New("must provide either a VM name or --filter")
-			}
-
-			vmNames, err := listFilteredVMNames(expName, filter)
-			if err != nil {
-				return err
-			}
-
-			for _, vmName := range vmNames {
-				err := vm.Resume(expName, vmName)
-				if err != nil {
-					err := util.HumanizeError(err, "%s", "Unable to resume the "+vmName+" VM")
-					return err.Humanized()
-				}
-
-				plog.Info(plog.TypeSystem, "vm resumed", "vm", vmName, "exp", expName)
-			}
-
-			return nil
+			return runFilteredVMAction(expName, filter, vm.Resume, "resume", "resumed")
 		},
 	}
 
