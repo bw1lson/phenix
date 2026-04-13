@@ -194,6 +194,8 @@ func newVMPauseCmd() *cobra.Command {
 
 
 func newVMResumeCmd() *cobra.Command {
+	var filter string
+	
 	cmd := &cobra.Command{
 		Use:               "resume <experiment name> <vm name>",
 		Short:             "Resume a paused VM for a specific experiment",
