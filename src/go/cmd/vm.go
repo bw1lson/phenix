@@ -324,9 +324,9 @@ func newVMResetDiskCmd() *cobra.Command {
 
 func newVMRedeployCmd() *cobra.Command {
 	var (
-		cpu  int
-		mem  int
-		part int
+		cpu    int
+		mem    int
+		part   int
 		filter string
 	)
 
