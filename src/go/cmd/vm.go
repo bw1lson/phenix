@@ -143,7 +143,8 @@ func listFilteredVMNames(expName, filter string) ([]string, error) {
 	var names []string
 	for _, machine := range vms {
 		// Command filters should only match against the VM name.
-		nameOnlyVM := mm.VM{Name: machine.Name}
+		var nameOnlyVM mm.VM
+		nameOnlyVM.Name = machine.Name
 
 		if !filterTree.Evaluate(&nameOnlyVM) {
 			continue
